@@ -1,38 +1,122 @@
-# Next + Netlify Starter
+# NextAuth.js Example
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/ed50f56e-4fc2-4c98-8b66-1e5074c6f3d3/deploy-status)](https://app.netlify.com/sites/next-starter/deploys)
+[next-auth-example.now.sh](https://next-auth-example.now.sh)
 
-This is a [Next.js](https://nextjs.org/) v10.1 project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) and set up to be instantly deployed to [Netlify](https://url.netlify.com/SyTBPVamO)!
+## About this project
 
-This project is a very minimal starter that includes 2 sample components, a global stylesheet, a `netlify.toml` for deployment, and a `jsconfig.json` for setting up absolute imports and aliases. It also includes the [Essential Next.js Build Plugin](https://github.com/netlify/netlify-plugin-nextjs), which will allow for you to implement features like Preview Mode, server-side rendering/incremental static regeneration via Netlify Functions, and internationalized routing.
+This is an example of how to use [NextAuth.js](https://next-auth.js.org) library to add authentication to a [Next.js](https://nextjs.org) application.
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/cassidoo/next-netlify-starter&utm_source=github&utm_medium=nextstarter-cs&utm_campaign=devex-cs)
+## About NextAuth.js
 
-(If you click this button, it will create a new repo for you that looks exactly like this one, and sets that repo up immediately for deployment on Netlify)
+NextAuth.js is an easy to implement, full-stack (client/server) open source authentication library designed for [Next.js](https://nextjs.org) and [Serverless](https://now.sh).
 
-## Getting Started
+Go to [next-auth.js.org](https://next-auth.js.org) for more information and documentation.
 
-First, run the development server:
+*NextAuth.js is not associated with Vercel or Next.js.*
 
-```bash
-npm run dev
-# or
-yarn dev
+## Getting started
+
+### 1. Clone the repository and install dependancies
+
+```
+git clone https://github.com/nextauthjs/next-auth-example.git
+cd next-auth-example
+npm i
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Configure your local environment
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+Copy the .env.local.example file in this directory to .env.local (which will be ignored by Git):
 
-### Installation options
+```
+cp .env.local.example .env.local
+```
 
-**Option one:** One-click deploy
+Add details for one or more providers (e.g. Google, Twitter, GitHub, Email, etc).
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/cassidoo/next-netlify-starter&utm_source=github&utm_medium=nextstarter-cs&utm_campaign=devex-cs)
+#### Database configuration
 
-**Option two:** Manual clone
+A database is needed to persist user accounts and to support email sign in, but you can still use NextAuth.js for authentication without one by using OAuth for authentication. If you do not specify a database, JSON Web Tokens will be enabled by default.
 
-1. Clone this repo: `git clone https://github.com/cassidoo/next-netlify-starter.git`
-2. Navigate to the directory and run `npm run dev`
-3. Make your changes
-4. Connect to [Netlify](https://url.netlify.com/Bk4UicocL) manually (the `netlify.toml` file is the one you'll need to make sure stays intact to make sure the export is done and pointed to the right stuff)
+You can skip configuring a database and come back to it later if you want.
+
+When configuring your database you should also install an appropriate node_module.
+
+* **SQLite**
+
+  Install module:
+  `npm i sqlite3`
+
+  Database URI:
+  `sqlite://localhost/:memory:?synchronize=true`
+
+* **MySQL**
+
+  Install module:
+  `npm i mysql`
+
+  Database URI:
+  `mysql://username:password@127.0.0.1:3306/database_name?synchronize=true`
+
+* **Postgres**
+
+  Install module:
+  `npm i pg`
+
+  Database URI:
+  `postgres://username:password@127.0.0.1:5432/database_name?synchronize=true`
+
+* **MongoDB**
+
+  Install module:
+  `npm i mongodb`
+
+  Database URI:
+  `mongodb://username:password@127.0.0.1:27017/database_name?synchronize=true`
+
+Notes:
+
+* The example .env specifies an in-memory SQLite database that does not persist data.
+* SQLite is suitable for development / testing but not for production.
+* The option `?synchronize=true` automatically syncs schema changes to the database. It should not be used in production as may result in data loss if there are changes to the schema or to NextAuth.js
+* You can also specify a [TypeORM connection object](https://typeorm.io/#/connection-options) in `pages/api/auth/[...nextauth].js` instead of a database URL / connection string.
+
+### 3. Configure authentication providers
+
+* Review and update options in `pages/api/auth/[...nextauth].js` as needed.
+
+* When setting up OAuth, in the developer admin page for each of your OAuth services, you should configure the callback URL to use a callback path of `{server}/api/auth/callback/{provider}`.
+
+  e.g. For Google OAuth you would use: `http://localhost:3000/api/auth/callback/google`
+
+  A list of configured providers and their callback URLs is available from the endpoint `/api/auth/providers`. You can find more information at https://next-auth.js.org/configuration/providers
+
+* You can also choose to specify an SMTP server for passwordless sign in via email.
+
+### 4. Start the application
+
+To run your site locally, use:
+
+```
+npm run dev
+```
+
+To run it it production mode, use:
+
+```
+npm build
+npm start
+```
+
+### 5. Configuring for production
+
+You must set the NEXTAUTH_URL environment variable with the URL of your site, before deploying to production.
+
+e.g. `NEXTAUTH_URL=https://example.com`
+
+To do this in on Vercel, you can use the [Vercel project dashboard](https://vercel.com/dashboard) or the `vc env` command:
+
+    vc env add NEXTAUTH_URL production
+
+Be sure to also set environment variables for the Client ID and Client Secret values for all your authentication providers.
+
